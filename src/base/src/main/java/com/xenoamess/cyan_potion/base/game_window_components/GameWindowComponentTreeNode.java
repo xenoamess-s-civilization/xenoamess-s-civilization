@@ -183,6 +183,10 @@ public class GameWindowComponentTreeNode implements Closeable {
         }
     }
 
+    public boolean preProcess(final Set<Event> res, final Event event) {
+        return this.getGameWindowComponent().preProcess(event);
+    }
+
     /**
      * <p>process.</p>
      * <p>
@@ -198,6 +202,10 @@ public class GameWindowComponentTreeNode implements Closeable {
      */
     public boolean process(final Set<Event> res, final Event event) {
         AtomicBoolean flag0 = new AtomicBoolean(false);
+
+        if (this.preProcess(res, event)) {
+            return true;
+        }
 
         // Choose children list based on coordinate system mode
         List<GameWindowComponentTreeNode> childrenToProcess;

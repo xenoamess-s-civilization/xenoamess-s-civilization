@@ -394,29 +394,42 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
         // Content background is drawn by the content component
     }
 
-    @Override
-    public Event process(Event event) {
+    public boolean preProcess(Event event) {
         // Check for mouse click to activate window
         if (event instanceof MouseButtonEvent) {
             MouseButtonEvent mouseEvent = (MouseButtonEvent) event;
-            if (mouseEvent.getAction() == GLFW.GLFW_PRESS && 
-                mouseEvent.getKey() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            if (mouseEvent.getAction() == GLFW.GLFW_PRESS &&
+                    mouseEvent.getKey() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                 float mouseX = getGameWindow().getMousePosX();
                 float mouseY = getGameWindow().getMousePosY();
-                
+
                 // Check if clicking in window area
                 if (isPointInWindow(mouseX, mouseY)) {
                     // Activate this window through GameDateManager
                     // Need to get access to GameDateManager
                     activateWindowIfNeeded();
-                    
-                    // Check for close button
-                    if (isPointInCloseButton(mouseX, mouseY)) {
-                        if (this.onCloseButtonClicked != null) {
-                            this.onCloseButtonClicked.accept(null);
-                        }
-                        return null;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    @Override
+    public Event process(Event event) {
+        // Check for close button click first
+        if (event instanceof MouseButtonEvent) {
+            MouseButtonEvent mouseEvent = (MouseButtonEvent) event;
+            if (mouseEvent.getAction() == GLFW.GLFW_PRESS &&
+                    mouseEvent.getKey() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                float mouseX = getGameWindow().getMousePosX();
+                float mouseY = getGameWindow().getMousePosY();
+
+                if (isPointInCloseButton(mouseX, mouseY)) {
+                    if (this.onCloseButtonClicked != null) {
+                        this.onCloseButtonClicked.accept(null);
                     }
+                    return null;
                 }
             }
         }
@@ -487,6 +500,11 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
     public void addToGameWindowComponentTree(com.xenoamess.cyan_potion.base.game_window_components.GameWindowComponentTreeNode node) {
         super.addToGameWindowComponentTree(node);
         contentComponent.addToGameWindowComponentTree(this.getGameWindowComponentTreeNode());
+    }
+
+    @Override
+    public void setLeftTopPosX(float leftTopPosX) {
+        super.setLeftTopPosX(leftTopPosX);
     }
 
 }

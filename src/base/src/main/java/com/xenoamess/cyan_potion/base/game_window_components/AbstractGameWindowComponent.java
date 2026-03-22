@@ -598,4 +598,9 @@ public abstract class AbstractGameWindowComponent implements Closeable, Abstract
             node.getParent().markSortDirty();
         }
     }
+
+    public boolean preProcess(Event event) {
+        return false;
+    }
+
 }
