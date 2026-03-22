@@ -525,7 +525,14 @@ public class Person {
      * Delegates to PersonAttributeCalculator.
      */
     public double getAppearance() {
-        return getAttributeCalculator().getAppearance(this);
+        double result = getAttributeCalculator().getAppearance(this);
+        if (result < 0.0) {
+            return 0.0;
+        }
+        if (result > 100.0) {
+            return 100.0;
+        }
+        return result;
     }
 
     /**
