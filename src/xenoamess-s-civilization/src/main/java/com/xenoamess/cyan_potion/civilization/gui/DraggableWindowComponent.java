@@ -77,8 +77,14 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
     private final Texture titleBarTexture;
     private final Texture closeButtonTexture;
     private final Texture closeButtonHoverTexture;
+    private final Texture borderTexture;
     private final Picture titleBarPicture = new Picture();
     private final Picture closeButtonPicture = new Picture();
+    // Four separate pictures for each border (cannot reuse one picture for 4 borders)
+    private final Picture borderTopPicture = new Picture();
+    private final Picture borderBottomPicture = new Picture();
+    private final Picture borderLeftPicture = new Picture();
+    private final Picture borderRightPicture = new Picture();
 
     // Colors
     private static final Vector4f COLOR_TITLE_TEXT = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -117,8 +123,20 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
             "",
             "0.9,0.3,0.3,1.0"
         );
+        // Dark border texture (dark brown/black)
+        this.borderTexture = this.getResourceManager().fetchResource(
+            Texture.class,
+            STRING_PURE_COLOR,
+            "",
+            "0.1,0.08,0.06,1.0"
+        );
 
         this.titleBarPicture.setBindable(titleBarTexture);
+        // Bind border texture to all 4 border pictures
+        this.borderTopPicture.setBindable(borderTexture);
+        this.borderBottomPicture.setBindable(borderTexture);
+        this.borderLeftPicture.setBindable(borderTexture);
+        this.borderRightPicture.setBindable(borderTexture);
 
         initDragging();
     }
@@ -231,7 +249,47 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
         // Draw content area background
         drawContentBackground();
 
-        return super.ifVisibleThenDraw();
+        boolean result = super.ifVisibleThenDraw();
+
+        // Draw dark border first (so it appears behind the window)
+        drawBorder();
+
+        return result;
+    }
+
+    /**
+     * Draws a dark border around the window using 4 separate pictures.
+     */
+    private void drawBorder() {
+        float borderThickness = 4;
+        float x = getLeftTopPosX() - borderThickness;
+        float y = getLeftTopPosY() - borderThickness;
+        float width = getWidth() + borderThickness * 2;
+        float height = getHeight() + borderThickness * 2;
+
+        // Draw top border
+        borderTopPicture.setLeftTopPos(x, y);
+        borderTopPicture.setSize(width, borderThickness);
+//        borderTopPicture.cover(this);
+        borderTopPicture.draw(this.getGameWindow());
+
+        // Draw bottom border
+        borderBottomPicture.setLeftTopPos(x, y + height - borderThickness);
+        borderBottomPicture.setSize(width, borderThickness);
+//        borderBottomPicture.cover(this);
+        borderBottomPicture.draw(this.getGameWindow());
+
+        // Draw left border
+        borderLeftPicture.setLeftTopPos(x, y);
+        borderLeftPicture.setSize(borderThickness, height);
+//        borderLeftPicture.cover(this);
+        borderLeftPicture.draw(this.getGameWindow());
+
+        // Draw right border
+        borderRightPicture.setLeftTopPos(x + width - borderThickness, y);
+        borderRightPicture.setSize(borderThickness, height);
+//        borderRightPicture.cover(this);
+        borderRightPicture.draw(this.getGameWindow());
     }
 
     private void drawTitleBar() {
