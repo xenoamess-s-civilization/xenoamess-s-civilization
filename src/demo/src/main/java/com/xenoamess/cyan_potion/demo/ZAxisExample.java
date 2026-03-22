@@ -25,10 +25,12 @@
 package com.xenoamess.cyan_potion.demo;
 
 import com.xenoamess.cyan_potion.base.GameManager;
-import com.xenoamess.cyan_potion.base.GameManagerConfig;
 import com.xenoamess.cyan_potion.base.game_window_components.AbstractGameWindowComponent;
 import com.xenoamess.cyan_potion.base.game_window_components.GameWindowComponentTreeNode;
 import com.xenoamess.cyan_potion.base.game_window_components.zsupport.CoordinateSystemMode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Example demonstrating the Z-axis coordinate system feature.
@@ -54,17 +56,18 @@ public class ZAxisExample {
      * @param args command line arguments (not used)
      */
     public static void main(String[] args) {
-        GameManagerConfig config = new GameManagerConfig();
-        config.setTitle("Z-Axis Example");
-        config.setWindowWidth(800);
-        config.setWindowHeight(600);
+        // Create configuration using Map
+        Map<String, String> argsMap = new HashMap<>();
+        argsMap.put("Title", "Z-Axis Example");
+        argsMap.put("WindowWidth", "800");
+        argsMap.put("WindowHeight", "600");
 
-        GameManager gameManager = new GameManager(config);
+        GameManager gameManager = new GameManager(argsMap);
         
         // Create the example scene
         createExampleScene(gameManager);
         
-        gameManager.start();
+        gameManager.startup();
     }
 
     /**
@@ -108,11 +111,10 @@ public class ZAxisExample {
      */
     private static void createLayeredComponents(AbstractGameWindowComponent parent) {
         // Background layer (Z = 0)
-        AbstractGameWindowComponent background = createColoredComponent(
+        AbstractGameWindowComponent background = createComponent(
             parent.getGameWindow(),
             "Background",
-            0.0f,  // Z = 0 (back)
-            0.2f, 0.2f, 0.8f, 1.0f  // Blue
+            0.0f  // Z = 0 (back)
         );
         background.setLeftTopPosX(10);
         background.setLeftTopPosY(10);
@@ -121,11 +123,10 @@ public class ZAxisExample {
         parent.getGameWindowComponentTreeNode().newNode(background);
         
         // Middle layer (Z = 10)
-        AbstractGameWindowComponent middle = createColoredComponent(
+        AbstractGameWindowComponent middle = createComponent(
             parent.getGameWindow(),
             "Middle",
-            10.0f,  // Z = 10 (middle)
-            0.2f, 0.8f, 0.2f, 1.0f  // Green
+            10.0f  // Z = 10 (middle)
         );
         middle.setLeftTopPosX(100);
         middle.setLeftTopPosY(100);
@@ -134,11 +135,10 @@ public class ZAxisExample {
         parent.getGameWindowComponentTreeNode().newNode(middle);
         
         // Front layer (Z = 20)
-        AbstractGameWindowComponent front = createColoredComponent(
+        AbstractGameWindowComponent front = createComponent(
             parent.getGameWindow(),
             "Front",
-            20.0f,  // Z = 20 (front)
-            0.8f, 0.2f, 0.2f, 1.0f  // Red
+            20.0f  // Z = 20 (front)
         );
         front.setLeftTopPosX(200);
         front.setLeftTopPosY(200);
@@ -174,36 +174,27 @@ public class ZAxisExample {
     }
 
     /**
-     * Helper method to create a colored component.
+     * Helper method to create a component.
      *
      * @param gameWindow the game window
      * @param name the component name
      * @param z the Z coordinate
-     * @param r red component (0-1)
-     * @param g green component (0-1)
-     * @param b blue component (0-1)
-     * @param a alpha component (0-1)
      * @return the created component
      */
-    private static AbstractGameWindowComponent createColoredComponent(
+    private static AbstractGameWindowComponent createComponent(
             com.xenoamess.cyan_potion.base.GameWindow gameWindow,
             String name,
-            float z,
-            float r, float g, float b, float a) {
+            float z) {
         
-        return new AbstractGameWindowComponent(gameWindow) {
+        AbstractGameWindowComponent component = new AbstractGameWindowComponent(gameWindow) {
             @Override
             protected void initProcessors() {
                 // Component-specific processors
             }
-            
-            @Override
-            public void draw() {
-                super.draw();
-                // Draw a colored rectangle
-                this.getGameWindow().getGameManager().getGameWindow().clear(r, g, b);
-            }
         };
+        
+        component.setZ(z);
+        return component;
     }
 
     /**
