@@ -77,7 +77,6 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
     private final Texture titleBarTexture;
     private final Texture closeButtonTexture;
     private final Texture closeButtonHoverTexture;
-    private final Texture borderTexture;
     private final Picture titleBarPicture = new Picture();
     private final Picture closeButtonPicture = new Picture();
     // Four separate pictures for each border (cannot reuse one picture for 4 borders)
@@ -90,6 +89,15 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
     private static final Vector4f COLOR_TITLE_TEXT = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
     private static final Vector4f COLOR_CLOSE_BUTTON = new Vector4f(0.9f, 0.3f, 0.3f, 1.0f);
     private static final Vector4f COLOR_CLOSE_BUTTON_HOVER = new Vector4f(1.0f, 0.4f, 0.4f, 1.0f);
+    
+    // Active state
+    @Getter
+    @Setter
+    private static volatile DraggableWindowComponent ACTIVE_DRAGGABLE_WINDOW_COMPONENT = null;
+
+    // Border textures for active/inactive states
+    private final Texture borderInactiveTexture;
+    private final Texture borderActiveTexture;
 
     /**
      * Creates a new DraggableWindowComponent.
@@ -124,19 +132,23 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
             "0.9,0.3,0.3,1.0"
         );
         // Dark border texture (dark brown/black)
-        this.borderTexture = this.getResourceManager().fetchResource(
+        // Border textures: inactive (dark) and active (gold)
+        this.borderInactiveTexture = this.getResourceManager().fetchResource(
             Texture.class,
             STRING_PURE_COLOR,
             "",
             "0.1,0.08,0.06,1.0"
         );
+        this.borderActiveTexture = this.getResourceManager().fetchResource(
+            Texture.class,
+            STRING_PURE_COLOR,
+            "",
+            "0.9,0.75,0.2,1.0"
+        );
 
         this.titleBarPicture.setBindable(titleBarTexture);
-        // Bind border texture to all 4 border pictures
-        this.borderTopPicture.setBindable(borderTexture);
-        this.borderBottomPicture.setBindable(borderTexture);
-        this.borderLeftPicture.setBindable(borderTexture);
-        this.borderRightPicture.setBindable(borderTexture);
+        // Border pictures will be bound when activate/deactivate is called
+        // Initially inactive
 
         initDragging();
     }
@@ -209,8 +221,7 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
 
     @Override
     public boolean update() {
-        super.update();
-
+        updateBorderTexture();
         // Safety check: if we're dragging but left button is not pressing anymore, stop dragging
         // This handles the case where mouse up event was missed (e.g., released outside window)
         if (isDragging) {
@@ -292,6 +303,38 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
         borderRightPicture.draw(this.getGameWindow());
     }
 
+    /**
+     * Updates border texture based on active state.
+     */
+    public void updateBorderTexture() {
+        Texture texture = ACTIVE_DRAGGABLE_WINDOW_COMPONENT == this ? borderActiveTexture : borderInactiveTexture;
+        this.borderTopPicture.setBindable(texture);
+        this.borderBottomPicture.setBindable(texture);
+        this.borderLeftPicture.setBindable(texture);
+        this.borderRightPicture.setBindable(texture);
+    }
+
+    /**
+     * Activates this window.
+     */
+    public void activate() {
+        DraggableWindowComponent activeDraggableWindowComponentLocal = ACTIVE_DRAGGABLE_WINDOW_COMPONENT;
+        if (activeDraggableWindowComponentLocal != this) {
+            if (activeDraggableWindowComponentLocal != null) {
+                this.setZ(activeDraggableWindowComponentLocal.getZ() + 1);
+            }
+            ACTIVE_DRAGGABLE_WINDOW_COMPONENT = this;
+            log.debug("Window activated: {}", title);
+        }
+    }
+
+    /**
+     * Deactivates this window.
+     */
+    public void deactivate() {
+        ACTIVE_DRAGGABLE_WINDOW_COMPONENT = null;
+    }
+
     private void drawTitleBar() {
         float x = getLeftTopPosX();
         float y = getLeftTopPosY();
@@ -353,7 +396,7 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
 
     @Override
     public Event process(Event event) {
-        // Check for close button click first
+        // Check for mouse click to activate window
         if (event instanceof MouseButtonEvent) {
             MouseButtonEvent mouseEvent = (MouseButtonEvent) event;
             if (mouseEvent.getAction() == GLFW.GLFW_PRESS && 
@@ -361,17 +404,50 @@ public class DraggableWindowComponent extends AbstractControllableGameWindowComp
                 float mouseX = getGameWindow().getMousePosX();
                 float mouseY = getGameWindow().getMousePosY();
                 
-                if (isPointInCloseButton(mouseX, mouseY)) {
-                    if (this.onCloseButtonClicked != null) {
-                        this.onCloseButtonClicked.accept(null);
+                // Check if clicking in window area
+                if (isPointInWindow(mouseX, mouseY)) {
+                    // Activate this window through GameDateManager
+                    // Need to get access to GameDateManager
+                    activateWindowIfNeeded();
+                    
+                    // Check for close button
+                    if (isPointInCloseButton(mouseX, mouseY)) {
+                        if (this.onCloseButtonClicked != null) {
+                            this.onCloseButtonClicked.accept(null);
+                        }
+                        return null;
                     }
-                    return null;
                 }
             }
         }
 
         // Process with parent (handles dragging)
         return super.process(event);
+    }
+    
+    /**
+     * Checks if a point is inside the window (including title bar and content).
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if point is in window
+     */
+    private boolean isPointInWindow(float x, float y) {
+        return x >= getLeftTopPosX() && 
+               x <= getLeftTopPosX() + getWidth() &&
+               y >= getLeftTopPosY() && 
+               y <= getLeftTopPosY() + getHeight();
+    }
+    
+    /**
+     * Activates this window via GameDateManager if not already active.
+     * This method should be overridden or called by the managing system.
+     */
+    protected void activateWindowIfNeeded() {
+        // This is a hook for external activation management
+        // The actual activation should be done by the system that manages these windows
+        // (e.g., PersonBrowserDemo or GameDateManager)
+        activate();
     }
 
     /**
