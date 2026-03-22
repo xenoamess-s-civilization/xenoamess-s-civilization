@@ -20,6 +20,7 @@ import com.xenoamess.cyan_potion.base.GameWindow;
 import com.xenoamess.cyan_potion.base.events.Event;
 import com.xenoamess.cyan_potion.base.game_window_components.AbstractGameWindowComponent;
 import com.xenoamess.cyan_potion.base.game_window_components.controllable_game_window_components.Button;
+import com.xenoamess.cyan_potion.base.game_window_components.zsupport.CoordinateSystemMode;
 import com.xenoamess.cyan_potion.base.io.input.key.Keymap;
 import com.xenoamess.cyan_potion.base.io.input.keyboard.KeyboardEvent;
 import com.xenoamess.cyan_potion.base.render.Texture;
@@ -229,6 +230,24 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         this.mapComponent = new MapComponent(gameWindow);
         this.mapComponent.setVisible(true);
 
+        // Enable Z-axis coordinate system for this component
+        this.setCoordinateSystemMode(CoordinateSystemMode.Z_AXIS_MODE);
+        
+        // Set Z values for proper layering
+        // Note: backgroundPicture is a Picture, not a component, so it doesn't have setZ
+        mapComponent.setZ(10);      // Map above background
+        listWindow.setZ(20);        // List window on top
+        detailWindow.setZ(30);      // Detail window highest
+        
+        // Buttons are on the UI layer
+        generateButton.setZ(20);
+        filterMaleButton.setZ(20);
+        filterFemaleButton.setZ(20);
+        clearFilterButton.setZ(20);
+        speedButton.setZ(20);
+        pauseButton.setZ(20);
+        dashboardButton.setZ(20);
+        
         initProcessors();
         // 初始化信念数据
         new BeliefDataGenerator().generateAllBeliefs();
