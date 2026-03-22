@@ -27,10 +27,12 @@ package com.xenoamess.cyan_potion.demo;
 import com.xenoamess.cyan_potion.base.GameManager;
 import com.xenoamess.cyan_potion.base.game_window_components.AbstractGameWindowComponent;
 import com.xenoamess.cyan_potion.base.game_window_components.GameWindowComponentTreeNode;
+import com.xenoamess.cyan_potion.base.game_window_components.controllable_game_window_components.Panel;
 import com.xenoamess.cyan_potion.base.game_window_components.zsupport.CoordinateSystemMode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Example demonstrating the Z-axis coordinate system feature.
@@ -64,162 +66,126 @@ public class ZAxisExample {
 
         GameManager gameManager = new GameManager(argsMap);
         
-        // Create the example scene
-        createExampleScene(gameManager);
+        // Create a component that initializes the example scene on its first update
+        new ZAxisExampleInitializer(gameManager);
         
         gameManager.startup();
     }
 
     /**
-     * Create an example scene demonstrating Z-axis features.
-     *
-     * @param gameManager the game manager
+     * Initializer component that creates the example scene after startup.
      */
-    private static void createExampleScene(GameManager gameManager) {
-        // Get the root node
-        GameWindowComponentTreeNode root = gameManager.getGameWindowComponentTree().getRoot();
-        
-        // Create a panel that uses Z-axis mode
-        AbstractGameWindowComponent zPanel = new AbstractGameWindowComponent(gameManager.getGameWindow()) {
-            @Override
-            protected void initProcessors() {
-                // No special processors needed for this example
-            }
-        };
-        
-        // Enable Z-axis mode for this panel
-        zPanel.setCoordinateSystemMode(CoordinateSystemMode.Z_AXIS_MODE);
-        zPanel.setLeftTopPosX(50);
-        zPanel.setLeftTopPosY(50);
-        zPanel.setWidth(700);
-        zPanel.setHeight(500);
-        
-        // Add to tree
-        root.newNode(zPanel);
-        
-        // Create layered components with different Z values
-        createLayeredComponents(zPanel);
-        
-        // Create a modal dialog with high Z value
-        createModalDialog(gameManager, zPanel);
-    }
+    private static class ZAxisExampleInitializer extends AbstractGameWindowComponent {
+        private final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    /**
-     * Create components demonstrating Z-layering.
-     *
-     * @param parent the parent component
-     */
-    private static void createLayeredComponents(AbstractGameWindowComponent parent) {
-        // Background layer (Z = 0)
-        AbstractGameWindowComponent background = createComponent(
-            parent.getGameWindow(),
-            "Background",
-            0.0f  // Z = 0 (back)
-        );
-        background.setLeftTopPosX(10);
-        background.setLeftTopPosY(10);
-        background.setWidth(680);
-        background.setHeight(480);
-        parent.getGameWindowComponentTreeNode().newNode(background);
-        
-        // Middle layer (Z = 10)
-        AbstractGameWindowComponent middle = createComponent(
-            parent.getGameWindow(),
-            "Middle",
-            10.0f  // Z = 10 (middle)
-        );
-        middle.setLeftTopPosX(100);
-        middle.setLeftTopPosY(100);
-        middle.setWidth(500);
-        middle.setHeight(300);
-        parent.getGameWindowComponentTreeNode().newNode(middle);
-        
-        // Front layer (Z = 20)
-        AbstractGameWindowComponent front = createComponent(
-            parent.getGameWindow(),
-            "Front",
-            20.0f  // Z = 20 (front)
-        );
-        front.setLeftTopPosX(200);
-        front.setLeftTopPosY(200);
-        front.setWidth(300);
-        front.setHeight(200);
-        parent.getGameWindowComponentTreeNode().newNode(front);
-    }
+        public ZAxisExampleInitializer(GameManager gameManager) {
+            super(gameManager.getGameWindow());
+        }
 
-    /**
-     * Create a modal dialog with very high Z value.
-     *
-     * @param gameManager the game manager
-     * @param parent the parent component
-     */
-    private static void createModalDialog(GameManager gameManager, AbstractGameWindowComponent parent) {
-        // Modal dialog with Z = 1000 (appears on top of everything)
-        AbstractGameWindowComponent modalDialog = new AbstractGameWindowComponent(gameManager.getGameWindow()) {
-            @Override
-            protected void initProcessors() {
-                // Modal dialog processors
-            }
-        };
-        
-        modalDialog.setCoordinateSystemMode(CoordinateSystemMode.Z_AXIS_MODE);
-        modalDialog.setZ(1000.0f);  // Very high Z to appear on top
-        modalDialog.setLeftTopPosX(250);
-        modalDialog.setLeftTopPosY(200);
-        modalDialog.setWidth(300);
-        modalDialog.setHeight(150);
-        
-        // Add to parent (inherits Z_AXIS_MODE from parent)
-        parent.getGameWindowComponentTreeNode().newNode(modalDialog);
-    }
+        @Override
+        protected void initProcessors() {
+            // No special processors needed
+        }
 
-    /**
-     * Helper method to create a component.
-     *
-     * @param gameWindow the game window
-     * @param name the component name
-     * @param z the Z coordinate
-     * @return the created component
-     */
-    private static AbstractGameWindowComponent createComponent(
-            com.xenoamess.cyan_potion.base.GameWindow gameWindow,
-            String name,
-            float z) {
-        
-        AbstractGameWindowComponent component = new AbstractGameWindowComponent(gameWindow) {
-            @Override
-            protected void initProcessors() {
-                // Component-specific processors
+        @Override
+        public boolean update() {
+            // Initialize scene on first update (after startup completes)
+            if (initialized.compareAndSet(false, true)) {
+                createExampleScene();
+                // Close this initializer after setup
+                this.close();
             }
-        };
-        
-        component.setZ(z);
-        return component;
-    }
+            return super.update();
+        }
 
-    /**
-     * Example of creating a component in LEGACY_MODE (backward compatible).
-     *
-     * @param gameWindow the game window
-     * @return a legacy mode component
-     */
-    @SuppressWarnings("unused")
-    private static AbstractGameWindowComponent createLegacyComponent(
-            com.xenoamess.cyan_potion.base.GameWindow gameWindow) {
-        
-        AbstractGameWindowComponent legacyComponent = new AbstractGameWindowComponent(gameWindow) {
-            @Override
-            protected void initProcessors() {
-                // Legacy processors
+        /**
+         * Create the example scene with Z-axis components.
+         */
+        private void createExampleScene() {
+            GameWindowComponentTreeNode root = this.getGameManager().getGameWindowComponentTree().getRoot();
+            if (root == null) {
+                System.err.println("Root node is null - cannot create example scene");
+                return;
             }
-        };
-        
-        // Explicitly set LEGACY_MODE (or leave default)
-        legacyComponent.setCoordinateSystemMode(CoordinateSystemMode.LEGACY_MODE);
-        
-        // Z coordinate is ignored in LEGACY_MODE
-        legacyComponent.setZ(999.0f);  // This has no effect in LEGACY_MODE
-        
-        return legacyComponent;
+
+            // Create a panel that uses Z-axis mode
+            Panel zPanel = new Panel(this.getGameWindow());
+            zPanel.setCoordinateSystemMode(CoordinateSystemMode.Z_AXIS_MODE);
+            zPanel.setLeftTopPosX(50);
+            zPanel.setLeftTopPosY(50);
+            zPanel.setWidth(700);
+            zPanel.setHeight(500);
+            zPanel.addToGameWindowComponentTree(root);
+
+            // Create layered components with different Z values
+            createLayeredComponents(zPanel);
+
+            // Create a modal dialog with high Z value
+            createModalDialog(zPanel);
+        }
+
+        /**
+         * Create components demonstrating Z-layering.
+         *
+         * @param parent the parent component
+         */
+        private void createLayeredComponents(Panel parent) {
+            GameWindowComponentTreeNode parentNode = parent.getGameWindowComponentTreeNode();
+            if (parentNode == null) {
+                return;
+            }
+
+            // Background layer (Z = 0)
+            Panel background = new Panel(this.getGameWindow());
+            background.setZ(0.0f);  // Z = 0 (back)
+            background.setLeftTopPosX(10);
+            background.setLeftTopPosY(10);
+            background.setWidth(680);
+            background.setHeight(480);
+            background.addToGameWindowComponentTree(parentNode);
+
+            // Middle layer (Z = 10)
+            Panel middle = new Panel(this.getGameWindow());
+            middle.setZ(10.0f);  // Z = 10 (middle)
+            middle.setLeftTopPosX(100);
+            middle.setLeftTopPosY(100);
+            middle.setWidth(500);
+            middle.setHeight(300);
+            middle.addToGameWindowComponentTree(parentNode);
+
+            // Front layer (Z = 20)
+            Panel front = new Panel(this.getGameWindow());
+            front.setZ(20.0f);  // Z = 20 (front)
+            front.setLeftTopPosX(200);
+            front.setLeftTopPosY(200);
+            front.setWidth(300);
+            front.setHeight(200);
+            front.addToGameWindowComponentTree(parentNode);
+
+            System.out.println("Created layered components with Z values: 0, 10, 20");
+        }
+
+        /**
+         * Create a modal dialog with very high Z value.
+         *
+         * @param parent the parent component
+         */
+        private void createModalDialog(Panel parent) {
+            GameWindowComponentTreeNode parentNode = parent.getGameWindowComponentTreeNode();
+            if (parentNode == null) {
+                return;
+            }
+
+            // Modal dialog with Z = 1000 (appears on top of everything)
+            Panel modalDialog = new Panel(this.getGameWindow());
+            modalDialog.setZ(1000.0f);  // Very high Z to appear on top
+            modalDialog.setLeftTopPosX(250);
+            modalDialog.setLeftTopPosY(200);
+            modalDialog.setWidth(300);
+            modalDialog.setHeight(150);
+            modalDialog.addToGameWindowComponentTree(parentNode);
+
+            System.out.println("Created modal dialog with Z = 1000");
+        }
     }
 }
