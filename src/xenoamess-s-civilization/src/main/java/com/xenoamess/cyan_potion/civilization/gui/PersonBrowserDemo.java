@@ -274,6 +274,7 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         DraggableWindowComponent listWindow = new DraggableWindowComponent(this.getGameWindow(), "人物列表", listComponent);
         listWindow.setLeftTopPos(50, 80);
         listWindow.setSize(500, 600);
+        listWindow.setZ(20);
         listWindow.setVisible(true);
         this.listComponent = listComponent;
         this.listWindow = listWindow;
@@ -295,6 +296,7 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         DraggableWindowComponent detailWindow = new DraggableWindowComponent(this.getGameWindow(), "人物详情", detailComponent);
         detailWindow.setLeftTopPos(580, 80);
         detailWindow.setSize(550, 600);
+        detailWindow.setZ(30);
         detailWindow.setVisible(false); // Hidden by default
         this.detailWindow = detailWindow;
         this.detailComponent = detailComponent;
