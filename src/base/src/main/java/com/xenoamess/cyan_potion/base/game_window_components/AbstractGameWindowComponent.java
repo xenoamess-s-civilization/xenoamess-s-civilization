@@ -131,6 +131,8 @@ public abstract class AbstractGameWindowComponent implements Closeable, Abstract
      *
      * @see com.xenoamess.cyan_potion.base.game_window_components.zsupport.CoordinateSystemMode
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @Getter
     @Setter
     private CoordinateSystemMode coordinateSystemMode = CoordinateSystemMode.LEGACY_MODE;

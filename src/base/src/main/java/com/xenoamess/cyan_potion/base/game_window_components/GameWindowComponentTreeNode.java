@@ -76,6 +76,8 @@ public class GameWindowComponentTreeNode implements Closeable {
      * For LEGACY_MODE, this is not used.
      * </p>
      */
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private List<GameWindowComponentTreeNode> sortedChildren = null;
 
     /**
