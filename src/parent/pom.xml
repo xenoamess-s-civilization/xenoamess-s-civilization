@@ -107,6 +107,7 @@
         <lombok.version>1.18.42</lombok.version>
         <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
         <httpcore.version>4.4.16</httpcore.version>
+        <groovy.version>4.0.26</groovy.version>
         <!---->
         <!---->
         <!--home made libraries versions-->
@@ -398,6 +399,19 @@
                 <version>${junit-jupiter.version}</version>
             </dependency>
             <!--test end-->
+
+            <!--groovy start-->
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.groovy</groupId>
+                <artifactId>groovy-jsr223</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <!--groovy end-->
 
             <!--annotation start-->
             <dependency>
