@@ -354,6 +354,14 @@ public class WorldMapGenerator {
             person.setCityId(city.getId());
         }
 
+        // Assign a ruler to each city that has residents
+        for (City city : cities) {
+            if (city.getRulerId() == null && !city.getResidents().isEmpty()) {
+                Person ruler = city.getResidents().iterator().next();
+                city.setRulerId(ruler.getId());
+            }
+        }
+
         log.info("Assigned {} persons to {} cities", persons.size(), cities.size());
     }
 

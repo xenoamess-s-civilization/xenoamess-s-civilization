@@ -87,6 +87,12 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
     private volatile DraggableWindowComponent detailWindow;
 
     @Getter
+    private volatile CityPanelComponent cityPanelComponent;
+
+    @Getter
+    private volatile DraggableWindowComponent cityPanelWindow;
+
+    @Getter
     private final Button generateButton;
 
     @Getter
@@ -167,6 +173,8 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
 
         this.detailWindow = newDetailWindow();
 
+        this.cityPanelWindow = newCityPanelWindow();
+
         // Control buttons
         this.generateButton = new Button(gameWindow, null, "生成100人");
         this.generateButton.registerOnMouseButtonLeftDownCallback(event -> {
@@ -229,6 +237,7 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         // Initialize map component
         this.mapComponent = new MapComponent(gameWindow);
         this.mapComponent.setVisible(true);
+        this.mapComponent.setOnCitySelected(this::onCitySelected);
 
         // Enable Z-axis coordinate system for this component
         this.setCoordinateSystemMode(CoordinateSystemMode.Z_AXIS_MODE);
@@ -236,8 +245,9 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         // Set Z values for proper layering
         // Note: backgroundPicture is a Picture, not a component, so it doesn't have setZ
         mapComponent.setZ(10);      // Map above background
-        listWindow.setZ(20);        // List window on top
-        detailWindow.setZ(30);      // Detail window highest
+        cityPanelWindow.setZ(20);   // City panel window on top of map
+        listWindow.setZ(30);        // List window on top
+        detailWindow.setZ(40);      // Detail window highest
         
         // Buttons are on the UI layer
         generateButton.setZ(20);
@@ -296,11 +306,28 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         DraggableWindowComponent detailWindow = new DraggableWindowComponent(this.getGameWindow(), "人物详情", detailComponent);
         detailWindow.setLeftTopPos(580, 80);
         detailWindow.setSize(550, 600);
-        detailWindow.setZ(30);
+        detailWindow.setZ(40);
         detailWindow.setVisible(false); // Hidden by default
         this.detailWindow = detailWindow;
         this.detailComponent = detailComponent;
         return detailWindow;
+    }
+
+    @NotNull
+    private DraggableWindowComponent newCityPanelWindow() {
+        CityPanelComponent cityPanelComponent = new CityPanelComponent(this.getGameWindow());
+        cityPanelComponent.setOnRulerClick(this::onPersonSelected);
+
+        DraggableWindowComponent cityPanelWindow = new DraggableWindowComponent(
+            this.getGameWindow(), "城市详情", cityPanelComponent
+        );
+        cityPanelWindow.setLeftTopPos(50, 350);
+        cityPanelWindow.setSize(350, 280);
+        cityPanelWindow.setZ(20);
+        cityPanelWindow.setVisible(false); // Hidden by default
+        this.cityPanelWindow = cityPanelWindow;
+        this.cityPanelComponent = cityPanelComponent;
+        return cityPanelWindow;
     }
 
 
@@ -349,6 +376,21 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         mapGenerator.assignPersonsToCities(allPersons);
 
         listComponent.performSearch();
+    }
+
+    private void onCitySelected(com.xenoamess.cyan_potion.civilization.map.City city) {
+        if (city == null) {
+            return;
+        }
+
+        if (!cityPanelWindow.isAlive()) {
+            DraggableWindowComponent cityPanelWindow = newCityPanelWindow();
+            cityPanelWindow.addToGameWindowComponentTree(this.getGameWindowComponentTreeNode());
+            this.cityPanelWindow = cityPanelWindow;
+        }
+        cityPanelComponent.show(city);
+        cityPanelWindow.setVisible(true);
+        log.debug("Showing city panel for: {}", city.getName());
     }
 
     private void onPersonSelected(Person person) {
@@ -654,6 +696,7 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         );
 
         // Update draggable windows
+        cityPanelWindow.update();
         listWindow.update();
         detailWindow.update();
 
@@ -728,7 +771,8 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         // Draw map at the bottom
         mapComponent.draw();
 
-        // Draw draggable windows (list window first, then detail) on top of map
+        // Draw draggable windows (city panel first, then list window, then detail) on top of map
+        cityPanelWindow.draw();
         listWindow.draw();
         detailWindow.draw();
 
@@ -754,9 +798,10 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
         // Process map (before windows, so windows take priority)
         event = mapComponent.process(event);
 
-        // Process draggable windows (detail first to handle on-top)
+        // Process draggable windows (detail first to handle on-top, then list, then city panel)
         event = detailWindow.process(event);
         event = listWindow.process(event);
+        event = cityPanelWindow.process(event);
 
         return super.process(event);
     }
@@ -765,6 +810,7 @@ public class PersonBrowserDemo extends AbstractGameWindowComponent implements De
     public void addToGameWindowComponentTree(com.xenoamess.cyan_potion.base.game_window_components.GameWindowComponentTreeNode node) {
         super.addToGameWindowComponentTree(node);
         mapComponent.addToGameWindowComponentTree(this.getGameWindowComponentTreeNode());
+        cityPanelWindow.addToGameWindowComponentTree(this.getGameWindowComponentTreeNode());
         listWindow.addToGameWindowComponentTree(this.getGameWindowComponentTreeNode());
         detailWindow.addToGameWindowComponentTree(this.getGameWindowComponentTreeNode());
     }

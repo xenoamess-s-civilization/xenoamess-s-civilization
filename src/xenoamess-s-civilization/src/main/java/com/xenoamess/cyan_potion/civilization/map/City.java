@@ -104,12 +104,32 @@ public class City {
     @Getter
     private final Collection<com.xenoamess.cyan_potion.civilization.character.Person> residents = new ConcurrentLinkedDeque<>();
 
+    /**
+     * ID of the ruler of this city.
+     */
+    @Getter
+    @Setter
+    private String rulerId;
+
     public City(@NotNull String id, @NotNull String name, float x, float y, @NotNull CityType type) {
         this.id = id;
         this.name = name;
         this.x = x;
         this.y = y;
         this.type = type;
+    }
+
+    /**
+     * Gets the ruler of this city.
+     *
+     * @return the ruler person, or null if no ruler is assigned
+     */
+    @org.jetbrains.annotations.Nullable
+    public com.xenoamess.cyan_potion.civilization.character.Person getRuler() {
+        if (rulerId == null) {
+            return null;
+        }
+        return com.xenoamess.cyan_potion.civilization.cache.PersonCache.ALL_PERSON_CACHE.get(rulerId);
     }
 
     /**
