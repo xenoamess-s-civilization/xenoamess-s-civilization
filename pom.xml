@@ -60,6 +60,7 @@
         <module>src/coordinate</module>
         <module>src/rpg_module</module>
         <module>src/xenoamess-s-civilization</module>
+        <module>src/xenoamess_chess</module>
         <module>src/demo</module>
         <!-- Optional 3D extension module -->
          <module>src/engine-3d</module>
