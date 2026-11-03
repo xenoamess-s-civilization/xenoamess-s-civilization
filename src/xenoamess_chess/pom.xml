@@ -29,4 +29,16 @@
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>XenoAmess chess game module for cyan_potion game engine.</description>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId><artifactId>base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId><artifactId>engine-mcp</artifactId><version>${project.version}</version>
+        </dependency>
+    </dependencies>
+    <build><plugins><plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-wrapper-plugin</artifactId>
+        <executions><execution><id>default</id><phase>none</phase></execution></executions>
+    </plugin></plugins></build>
 </project>
