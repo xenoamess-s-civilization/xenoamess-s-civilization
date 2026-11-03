@@ -58,6 +58,7 @@
         <module>src/parent</module>
         <module>src/base</module>
         <module>src/coordinate</module>
+        <module>src/engine-mcp</module>
         <module>src/rpg_module</module>
         <module>src/xenoamess-s-civilization</module>
         <module>src/xenoamess_chess</module>
