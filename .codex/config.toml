@@ -1,0 +1,5 @@
+[mcp_servers.cyan_potion]
+command = "node"
+args = ["scripts/mcp-engine.mjs"]
+startup_timeout_sec = 20
+tool_timeout_sec = 20

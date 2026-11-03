@@ -1,0 +1,32 @@
+<settingFile settingFormatVersion=0.3.0>
+    <commonSettings
+        gameName=XenoAmessChess
+        gameVersion=0.167.3-SNAPSHOT
+        titleTextID=0
+        language=english
+        defaultFontResourceURI=["com.xenoamess.cyan_potion.base.visual.Font","ttfFile","resources/www/fonts/SourceHanSans-Normal.ttc"]
+        gameWindowClassName=com.xenoamess.cyan_potion.base.GameWindow
+        logoClassName=com.xenoamess.cyan_potion.xenoamess_chess.ChessScene
+        maxFPS=60
+        runWithSteam=0
+    >>
+    <views
+        logicWindowWidth=1280
+        logicWindowHeight=820
+        realWindowWidth=1280
+        realWindowHeight=820
+        fullScreen=0
+        gameWindowResizable=1
+    >>
+    <specialSettings noConsoleThread=1 autoShowGameWindowAfterInit=1>>
+    <codePlugins [>
+        <rightAfterResourceManagerCreate>SimpleFunctionObject:com.xenoamess.cyan_potion.base.render.Texture:PUT_TEXTURE_LOADERS>
+        <rightAfterResourceManagerCreate>SimpleFunctionObject:com.xenoamess.cyan_potion.base.visual.Font:PUT_FONT_LOADER_TTF_FILE>
+    >
+    <debug=0>>
+    <keymap using>
+        <GLFW_MOUSE_BUTTON_LEFT>XENOAMESS_MOUSE_BUTTON_LEFT>
+        <GLFW_MOUSE_BUTTON_RIGHT>XENOAMESS_MOUSE_BUTTON_RIGHT>
+    >
+    <<comment>
+>

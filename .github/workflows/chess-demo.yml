@@ -1,0 +1,50 @@
+name: Chess demo and MCP
+
+on:
+  push:
+    paths:
+      - 'src/base/**'
+      - 'src/engine-mcp/**'
+      - 'src/xenoamess_chess/**'
+      - 'src/parent/pom.xml'
+      - 'pom.xml'
+      - 'scripts/**'
+      - 'settings/ChessSettings.x8l'
+      - '.github/workflows/chess-demo.yml'
+  pull_request:
+    paths:
+      - 'src/base/**'
+      - 'src/engine-mcp/**'
+      - 'src/xenoamess_chess/**'
+      - 'src/parent/pom.xml'
+      - 'pom.xml'
+      - 'scripts/**'
+      - 'settings/ChessSettings.x8l'
+      - '.github/workflows/chess-demo.yml'
+  workflow_dispatch:
+
+jobs:
+  rules-and-mcp:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        java: ['17', '21']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Build and run relevant tests
+        shell: pwsh
+        run: ./scripts/build-chess.ps1
+      - name: Exercise the game through MCP
+        run: node scripts/chess-smoke.mjs --headless
+      - name: Preserve MCP reports and images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chess-mcp-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: src/xenoamess_chess/target/automation-artifacts/
